@@ -38,6 +38,7 @@
 #include "SIM_MS5611.h"
 #include "SIM_QMC5883L.h"
 #include "SIM_INA3221.h"
+#include "SIM_AS5600.h"
 
 #include <signal.h>
 
@@ -89,6 +90,9 @@ static QMC5883L qmc5883l;
 #if AP_SIM_INA3221_ENABLED
 static INA3221 ina3221;
 #endif
+#if AP_SIM_AS5600_ENABLED
+static AS5600 as5600;  // AoA sensor
+#endif
 
 struct i2c_device_at_address {
     uint8_t bus;
@@ -104,6 +108,9 @@ struct i2c_device_at_address {
 #endif
     { 1, 0x38, ignored }, // NCP5623
     { 1, 0x39, ignored }, // NCP5623C
+#if AP_SIM_AS5600_ENABLED
+    { 1, 0x36, as5600 },
+#endif
     { 1, 0x40, ignored }, // KellerLD
     { 1, 0x76, ms5525 },  // MS5525: ARSPD_TYPE = 4
 #if AP_SIM_INA3221_ENABLED
