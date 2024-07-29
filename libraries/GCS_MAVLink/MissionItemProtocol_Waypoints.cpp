@@ -126,4 +126,6 @@ void MissionItemProtocol_Waypoints::truncate(const mavlink_mission_count_t &pack
     mission.truncate(packet.count);
 }
 
+
 #endif  // HAL_GCS_ENABLED && AP_MISSION_ENABLED
+
