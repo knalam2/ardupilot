@@ -18,7 +18,7 @@ Global definitions
 --]]
 local MAV_SEVERITY = {EMERGENCY=0, ALERT=1, CRITICAL=2, ERROR=3, WARNING=4, NOTICE=5, INFO=6, DEBUG=7}
 local SCRIPT_NAME = "VSPeak Modell flow meter driver"
-local NUM_SCRIPT_PARAMS = 1
+local NUM_SCRIPT_PARAMS = 2
 local LOOP_RATE_HZ = 10
 local last_warning_time_ms = uint32_t(0)
 local WARNING_DEADTIME_MS = 1000
@@ -67,6 +67,14 @@ assert(param:add_table(PARAM_TABLE_KEY, PARAM_TABLE_PREFIX, NUM_SCRIPT_PARAMS), 
   // @User: Standard
 --]]
 local VSPF_ENABLE = bind_add_param('ENABLE', 1, 0)
+
+--[[
+  // @Param: BATT_IDX
+  // @DisplayName: Index of assigned battery.
+  // @Description: Ensure this battery is configured with `BATT*_MONITOR=29`.
+  // @User: Standard
+--]]
+local VSPF_BAT_IDX = bind_add_param('BAT_IDX', 2, 2)
 
 --[[
 Potential additions:
@@ -152,16 +160,22 @@ function parse_buffer()
 
 end
 
-function update_efi()
+function update_battery()
    if state.updated == false then
       return
    end
 
-   local efi_state = EFI_State()
-   efi_state:fuel_consumption_rate_cm3pm(state.flow)
-   efi_state:estimated_consumed_fuel_volume_cm3(state.fuel_ml)
-   efi_state:last_updated_ms(millis())
-   efi_backend:handle_scripting(efi_state)
+   -- Assumption: litres per hour will be used as equivalent to Amperes.
+   local bat_state = BattMonitorScript_State()
+   bat_state:healthy(true)
+   bat_state:cell_count(1)
+   bat_state:voltage(1)
+   bat_state:consumed_mah(state.fuel_ml)
+   bat_state:capacity_remaining_pct(state.fuel_pct)
+   bat_state:current_amps(state.flow/1000*60.0)
+   bat_state:temperature(0)
+
+   battery:handle_scripting(VSPF_BAT_IDX:get()-1, bat_state)
 end
 
 --[[
@@ -197,7 +211,7 @@ function fsm_step()
         -- Feed the buffer.
         read_uart()
         parse_buffer()
-        update_efi()
+        update_battery()
 
         if must_stop() then
             next_state = FSM_STATE.INACTIVE
@@ -224,12 +238,6 @@ function setup()
         return
     end
     uart:begin(19200)
-
-    efi_backend = efi:get_backend(0)
-    if not efi_backend then
-        warn_user("Unable to find EFI backend", MAV_SEVERITY.ERROR)
-        return
-    end
 
     state.last_read_us = 0x00
     state.buffer = {}
