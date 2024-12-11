@@ -1,0 +1,146 @@
+#VRML_SIM R2023a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/obstacles/protos/OilBarrel.proto"
+EXTERNPROTO "../protos/BlueBoat.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/devices/nvidia/protos/JetsonNano.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/robots/nvidia/jetbot/protos/JetBotRaspberryPiCamera.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation 0.014070684209022785 0.5380415697049384 0.8428008573294974 0.653511022037878
+  position -16.38342404583264 -10.361964847206355 7.15186999901102
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+DEF WATER Fluid {
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.0626841 0.552224 0.723339
+        transparency 0.7
+        roughness 1
+        metalness 0
+      }
+      geometry DEF WATER_BOX Box {
+        size 1000 1000 0.7
+      }
+    }
+  ]
+  viscosity 0.01
+  boundingObject Transform {
+    children [
+      USE WATER_BOX
+    ]
+  }
+  locked TRUE
+}
+BlueBoat {
+  translation 0 0 0.5
+  rotation 0 0 1 2.61799
+  controller "ardupilot_vehicle_controller"
+  controllerArgs [
+    "--motors"
+    "left_motor, right_motor"
+    "--motor-cap"
+    "10"
+    "--bidirectional-motors"
+    "true"
+    "--camera"
+    "camera"
+    "--camera-port"
+    "5599"
+    "--sitl-address"
+    "localhost"
+  ]
+  extensionSlot [
+    JetsonNano {
+      translation 0.17 0.36 0.08
+      rotation 0 0 1 -1.5707953071795862
+    }
+    JetBotRaspberryPiCamera {
+      translation 0.32 0 0.2
+      fieldOfView 0.7
+      near 0.1
+    }
+    InertialUnit {
+    }
+    GPS {
+    }
+    Accelerometer {
+    }
+    Gyro {
+    }
+  ]
+}
+OilBarrel {
+  translation 1.00864 7.46399 0.566329
+  rotation -0.17000006110990545 -0.9047921649529348 0.39044989110308337 1.752814691517513
+  physics Physics {
+    density 100
+    damping Damping {
+      linear 0.5
+      angular 0.5
+    }
+  }
+  immersionProperties [
+    ImmersionProperties {
+      fluidName "fluid"
+    }
+  ]
+}
+OilBarrel {
+  translation -10.052079249302796 2.4814946123187727 0.5595498919704249
+  rotation -0.2751145870612612 -0.6601107052655578 0.6989748355841716 -2.843723472604472
+  name "oil barrel(1)"
+  physics Physics {
+    density 100
+    damping Damping {
+      linear 0.5
+      angular 0.5
+    }
+  }
+  immersionProperties [
+    ImmersionProperties {
+      fluidName "fluid"
+    }
+  ]
+}
+OilBarrel {
+  translation -3.54718 -2.19833 1.05429
+  rotation 0.9914248557443196 0.045597095586811014 0.12246493492588871 1.5859460279251565
+  name "oil barrel(2)"
+  physics Physics {
+    density 100
+    damping Damping {
+      linear 0.5
+      angular 0.5
+    }
+  }
+  immersionProperties [
+    ImmersionProperties {
+      fluidName "fluid"
+    }
+  ]
+}
+OilBarrel {
+  translation -2.90734 1.30062 0.563657
+  rotation 0.737839555282382 0.1439329283223751 -0.6594513650036995 -2.4506597166551938
+  name "oil barrel(3)"
+  physics Physics {
+    density 100
+    damping Damping {
+      linear 0.5
+      angular 0.5
+    }
+  }
+  immersionProperties [
+    ImmersionProperties {
+      fluidName "fluid"
+    }
+  ]
+}
