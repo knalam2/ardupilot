@@ -6,8 +6,8 @@
 --   3. Enable the scripting engine via SCR_ENABLE.
 --   4. Set SERIAL*_BAUD = 19 (19200)
 --   5. Set SERIAL*_PROTOCOL = 28 (Scripting)
---   6. Set EFI_TYPE=7 (Scripting)
---   7. Set BATT2_MONITOR = 27 (EFI)
+--   6. Set BATT*_MONITOR = 27 (Scripting)
+--   7. Set BATT*_CAPACITY to the amount of ml your tank is filled with.
 
 --
 -- Usage
@@ -18,7 +18,7 @@ Global definitions
 --]]
 local MAV_SEVERITY = {EMERGENCY=0, ALERT=1, CRITICAL=2, ERROR=3, WARNING=4, NOTICE=5, INFO=6, DEBUG=7}
 local SCRIPT_NAME = "VSPeak Modell flow meter driver"
-local NUM_SCRIPT_PARAMS = 2
+local NUM_SCRIPT_PARAMS = 3
 local LOOP_RATE_HZ = 10
 local last_warning_time_ms = uint32_t(0)
 local WARNING_DEADTIME_MS = 1000
@@ -75,6 +75,14 @@ local VSPF_ENABLE = bind_add_param('ENABLE', 1, 0)
   // @User: Standard
 --]]
 local VSPF_BAT_IDX = bind_add_param('BAT_IDX', 2, 2)
+
+--[[
+  // @Param: CFACT
+  // @DisplayName: Measurement correction factor
+  // @Description: This is multiplicative factor to correct the measured flow. Set to <1 if your sensor measures too high.
+  // @User: Standard
+--]]
+local VSPF_CFACT = bind_add_param('CFACT', 3, 1)
 
 --[[
 Potential additions:
@@ -170,9 +178,7 @@ function update_battery()
    bat_state:healthy(true)
    bat_state:cell_count(1)
    bat_state:voltage(1)
-   bat_state:consumed_mah(state.fuel_ml)
-   bat_state:capacity_remaining_pct(state.fuel_pct)
-   bat_state:current_amps(state.flow/1000*60.0)
+   bat_state:current_amps(state.flow/1000*60.0*VSPF_CFACT:get()) -- Convert from ml/min to l/h.
    bat_state:temperature(0)
 
    battery:handle_scripting(VSPF_BAT_IDX:get()-1, bat_state)
