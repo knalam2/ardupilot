@@ -4,21 +4,47 @@ This driver implements support for the VSPeak Modell flow meter sensor.
 
 https://www.vspeak-modell.de/en/flow-meter
 
-# Parameters
-
-The script used the following parameters:
-
-## VSPF_ENABLE
-
-Setting this to 1 enables the driver.
-
 # Setup
 
-First of all, calibrate and configure the flow meter according to the
-manufacturer instructions. Set your configuration with the `FLOW.txt` file,
-placed in the SD card in the sensor itself.
-For this script, the consumed/level FUEL display setting is not relevant,
-as only the current flow is used.
+## Mode selection
+
+There are two ways to operate this sensor.
+
+**A: Save consumed volume**
+
+Under this mode, the sensor will remember how much fuel volume was consumed
+across power cycles. This allows you to have an accurate fuel tank level
+reading even if you power down or reboot the autopilot.
+
+However, you will have to manually reset the sensor each time you refuel the
+vehicle. This is achieved by issuing a PWM signal to the sensor.
+
+To set that mode, you need to set the `Auto Reset` setting to `Power ON` in
+the `FLOW.txt` sensor settings file.
+For more information, read the sensor manual.
+
+**B: Forget consumed volume**
+
+Under this mode, the consumed fuel volume will reset after each power cycle.
+This is especially important for fuel-powered vehicles, as there is no
+equivalent of a voltage reading to initialize the remaining energy percentage.
+
+On the upside, you do not need to wire a PWM signal to the sensor to reset the
+consumed volume measurement. You will have to update the starting volume
+manually.
+
+To set that mode, you need to set the `Auto Reset` setting to `Power OFF` in
+the `FLOW.txt` sensor settings file.
+For more information, read the sensor manual.
+
+## Sensor configuration
+
+Calibrate the flow meter according to the manufacturer instructions.
+
+Additionally, configure the sensor to report the consumed fuel volume, by
+setting the `FUEL display` to `consumed` in `FLOW.txt`.
+
+## Script parameter settings
 
 Once this is done, perform the following steps.
 
@@ -31,10 +57,21 @@ Once this is done, perform the following steps.
 Then, decide which battery monitor will be assigned to the sensor (for now
 referred to as `BATT*`).
 6. Set `BATT*_MONITOR` = 29 (Scripting)
+
 7. Set `BATT*_CAPACITY` to the amount of ml your tank is filled with. This can 
 vary from flight to flight.
+If operating under Mode A (Save consumed), you do not need to update this
+value with what is remaining in the tank after every reboot.
+If you are operating under Mode B (Reset consumed), you will have to update
+this value after every reboot, if fuel was consumed in the meantime.
+
 8. Tell the script which battery monitor is employed via `VSPF_BAT_IDX`.
-9. Enable the script itself with `VSPF_ENABLE=1`.
+
+9. Set the selected operation mode:
+For mode A (save consumed), set `VSPF_MODE=0`.
+For mode B (reset consumed), set `VSPF_MODE=1`.
+
+10. Enable the script itself with `VSPF_ENABLE=1`.
 
 # Operation
 
@@ -45,3 +82,35 @@ will display in the corresponding `BATTERY_STATUS` MAVLink message:
 
 You can use the parameter `VSPF_CFACT` to compensate for scaling errors in the
 sensor setup. 1 is the default value. Set to <1 if the measurements are too high.
+
+## Refueling
+
+When refueling, make sure to set `BATT*CAPACITY` to the actual, new value of
+the fuel volume that is in the tank.
+
+If operating under mode A (Save consumed), reset the sensor by triggering the
+PWM pulse.
+
+# Parameters
+
+The script used the following parameters:
+
+## VSPF_ENABLE
+
+Setting this to 1 enables the driver.
+
+## VSPF_BAT_IDX
+
+Selects which battery monitor instance will be fed the fuel consumption
+information. 1-indexed.
+
+## VSPF_CFACT
+
+This is multiplicative factor to correct the measured flow. Set to <1 if your
+sensor measures too high and vice versa.
+
+## VSPF_MODE
+
+Tells the script which mode it is operating in.
+0: Mode A, save consumption.
+1: Mode B, reset consumption.

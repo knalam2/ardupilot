@@ -1,24 +1,17 @@
 -- VSPeak_flow_meter.lua: Driver for the VSPeak Modell fuel flow sensor.
 --
 -- Setup
---   1. Place this script in the "scripts" directory of the autopilot.
---   2. Connect the sensor to a serial port (for now referred to as SERIAL*)
---   3. Enable the scripting engine via SCR_ENABLE.
---   4. Set SERIAL*_BAUD = 19 (19200)
---   5. Set SERIAL*_PROTOCOL = 28 (Scripting)
---   6. Set BATT*_MONITOR = 29 (Scripting)
---   7. Set BATT*_CAPACITY to the amount of ml your tank is filled with.
-
+--      Read the accompanying .md file.
 --
 -- Usage
---   No further action required.
+--      Read the accompanying .md file.
 
 --[[
 Global definitions
 --]]
 local MAV_SEVERITY = {EMERGENCY=0, ALERT=1, CRITICAL=2, ERROR=3, WARNING=4, NOTICE=5, INFO=6, DEBUG=7}
 local SCRIPT_NAME = "VSPeak Modell flow meter driver"
-local NUM_SCRIPT_PARAMS = 3
+local NUM_SCRIPT_PARAMS = 4
 local LOOP_RATE_HZ = 10
 local last_warning_time_ms = uint32_t(0)
 local WARNING_DEADTIME_MS = 1000
@@ -84,9 +77,13 @@ local VSPF_BAT_IDX = bind_add_param('BAT_IDX', 2, 2)
 local VSPF_CFACT = bind_add_param('CFACT', 3, 1)
 
 --[[
-Potential additions:
-- The scripting switch.
+  // @Param: MODE
+  // @DisplayName: Sensor operating mode
+  // @Description: 0: The sensor will save the fuel consumption across power resets. 1: The sensor will reset the power consumption.
+  // @User: Standard
 --]]
+local VSPF_MODE = bind_add_param('MODE', 4, 0)
+
 -- Warn the user, throttling the message rate.
 function warn_user(msg, severity)
     severity = severity or MAV_SEVERITY.WARNING -- Optional severity argument.
@@ -168,19 +165,23 @@ function parse_buffer()
 end
 
 function update_battery()
-   if state.updated == false then
-      return
-   end
+    if state.updated == false then
+        return
+    end
 
-   -- Assumption: litres per hour will be used as equivalent to Amperes.
-   local bat_state = BattMonitorScript_State()
-   bat_state:healthy(true)
-   bat_state:cell_count(1)
-   bat_state:voltage(1)
-   bat_state:current_amps(state.flow/1000*60.0*VSPF_CFACT:get()) -- Convert from ml/min to l/h.
-   bat_state:temperature(0)
+    -- Assumption: litres per hour will be used as equivalent to Amperes.
+    local bat_state = BattMonitorScript_State()
+    bat_state:healthy(true)
+    bat_state:cell_count(1)
+    bat_state:voltage(1)
+    bat_state:current_amps(state.flow/1000*60.0*VSPF_CFACT:get()) -- Convert from ml/min to l/h.
+    bat_state:temperature(0)
 
-   battery:handle_scripting(VSPF_BAT_IDX:get()-1, bat_state)
+    if VSPF_MODE:get() == 1 then
+        bat_state:consumed_mah(state.fuel_ml*VSPF_CFACT:get())
+    end
+
+    battery:handle_scripting(VSPF_BAT_IDX:get()-1, bat_state)
 end
 
 --[[
