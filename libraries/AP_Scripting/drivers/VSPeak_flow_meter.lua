@@ -6,7 +6,7 @@
 --   3. Enable the scripting engine via SCR_ENABLE.
 --   4. Set SERIAL*_BAUD = 19 (19200)
 --   5. Set SERIAL*_PROTOCOL = 28 (Scripting)
---   6. Set BATT*_MONITOR = 27 (Scripting)
+--   6. Set BATT*_MONITOR = 29 (Scripting)
 --   7. Set BATT*_CAPACITY to the amount of ml your tank is filled with.
 
 --
@@ -27,7 +27,6 @@ local BUFFER_LEN = 2*FRAME_LEN - 1
 local HEADER_BYTE = 0xFE
 local INIT_DELAY_MS = 5000
 local uart
-local efi_backend
 local state = {}
 
 

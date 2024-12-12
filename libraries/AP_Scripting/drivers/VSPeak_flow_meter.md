@@ -30,7 +30,7 @@ Once this is done, perform the following steps.
 
 Then, decide which battery monitor will be assigned to the sensor (for now
 referred to as `BATT*`).
-6. Set `BATT*_MONITOR` = 27 (Scripting)
+6. Set `BATT*_MONITOR` = 29 (Scripting)
 7. Set `BATT*_CAPACITY` to the amount of ml your tank is filled with. This can 
 vary from flight to flight.
 8. Tell the script which battery monitor is employed via `VSPF_BAT_IDX`.
