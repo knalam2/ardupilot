@@ -256,7 +256,7 @@ void AP_CANManager::init()
             continue;
         }
 
-        _drivers[drv_num]->init(drv_num, false);
+        _drivers[drv_num]->init(drv_num);
     }
 
 #if AP_CAN_LOGGING_ENABLED
@@ -277,7 +277,7 @@ void AP_CANManager::init()
             }
 
             AP_Param::load_object_from_eeprom((AP_DroneCAN*)_drivers[i], AP_DroneCAN::var_info);
-            _drivers[i]->init(i, true);
+            _drivers[i]->init(i);
             _driver_type_cache[i] = (AP_CAN::Protocol) _drv_param[i]._driver_type.get();
         }
     }
@@ -328,7 +328,7 @@ bool AP_CANManager::register_driver(AP_CAN::Protocol dtype, AP_CANDriver *driver
         _drivers[drv_num]->add_interface(iface);
         log_text(AP_CANManager::LOG_INFO, LOG_TAG, "Adding Interface %d to Driver %d", i + 1, drv_num + 1);
 
-        _drivers[drv_num]->init(drv_num, false);
+        _drivers[drv_num]->init(drv_num);
         _driver_type_cache[drv_num] = dtype;
 
         _num_drivers++;
