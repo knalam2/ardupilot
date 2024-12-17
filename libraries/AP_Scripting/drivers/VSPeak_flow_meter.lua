@@ -99,7 +99,7 @@ function uint16_value(hbyte, lbyte)
 end
 
 function read_uart()
-    local n_avail = uart:available()
+    local n_avail = uart:available():toint()
 
     -- Discard up to BUFFER_LEN bytes.
     -- These are stale data.
