@@ -1160,7 +1160,7 @@ function Location_ud:get_bearing(loc) end
 -- Returns the offset from the EKF origin to this location.
 -- Returns nil if the EKF origin wasn’t available at the time this was called.
 ---@return Vector3f_ud|nil -- Vector between origin and location north east up in meters
-function Location_ud:get_vector_from_origin_NEU() end
+function Location_ud:get_vector_from_origin_NEU_cm() end
 
 -- Translates this Location by the specified  distance given a bearing.
 ---@param bearing_deg number -- bearing in degrees

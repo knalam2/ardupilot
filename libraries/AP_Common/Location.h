@@ -65,11 +65,11 @@ public:
     // centimetres.  If this method returns false then vec_ne is
     // unmodified.
     template<typename T>
-    bool get_vector_xy_from_origin_NE(T &vec_ne) const WARN_IF_UNUSED;
+    bool get_vector_xy_from_origin_NE_cm(T &vec_ne) const WARN_IF_UNUSED;
     // converts location to a vector from origin; if this method returns
     // false then vec_neu is unmodified
     template<typename T>
-    bool get_vector_from_origin_NEU(T &vec_neu) const WARN_IF_UNUSED;
+    bool get_vector_from_origin_NEU_cm(T &vec_neu) const WARN_IF_UNUSED;
 
     // return horizontal distance in meters between two locations
     ftype get_distance(const Location &loc2) const;

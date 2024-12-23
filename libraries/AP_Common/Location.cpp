@@ -219,7 +219,7 @@ bool Location::get_alt_m(AltFrame desired_frame, float &ret_alt) const
 // converts location to a vector from origin; if this method returns
 // false then vec_ne is unmodified
 template<typename T>
-bool Location::get_vector_xy_from_origin_NE(T &vec_ne) const
+bool Location::get_vector_xy_from_origin_NE_cm(T &vec_ne) const
 {
     Location ekf_origin;
     if (!AP::ahrs().get_origin(ekf_origin)) {
@@ -231,15 +231,15 @@ bool Location::get_vector_xy_from_origin_NE(T &vec_ne) const
 }
 
 // define for float and position vectors
-template bool Location::get_vector_xy_from_origin_NE<Vector2f>(Vector2f &vec_ne) const;
+template bool Location::get_vector_xy_from_origin_NE_cm<Vector2f>(Vector2f &vec_ne) const;
 #if HAL_WITH_POSTYPE_DOUBLE
-template bool Location::get_vector_xy_from_origin_NE<Vector2p>(Vector2p &vec_ne) const;
+template bool Location::get_vector_xy_from_origin_NE_cm<Vector2p>(Vector2p &vec_ne) const;
 #endif
 
 // converts location to a vector from origin; if this method returns
 // false then vec_neu is unmodified
 template<typename T>
-bool Location::get_vector_from_origin_NEU(T &vec_neu) const
+bool Location::get_vector_from_origin_NEU_cm(T &vec_neu) const
 {
     // convert altitude
     int32_t alt_above_origin_cm = 0;
@@ -248,7 +248,7 @@ bool Location::get_vector_from_origin_NEU(T &vec_neu) const
     }
 
     // convert lat, lon
-    if (!get_vector_xy_from_origin_NE(vec_neu.xy())) {
+    if (!get_vector_xy_from_origin_NE_cm(vec_neu.xy())) {
         return false;
     }
 
@@ -258,9 +258,9 @@ bool Location::get_vector_from_origin_NEU(T &vec_neu) const
 }
 
 // define for float and position vectors
-template bool Location::get_vector_from_origin_NEU<Vector3f>(Vector3f &vec_neu) const;
+template bool Location::get_vector_from_origin_NEU_cm<Vector3f>(Vector3f &vec_neu) const;
 #if HAL_WITH_POSTYPE_DOUBLE
-template bool Location::get_vector_from_origin_NEU<Vector3p>(Vector3p &vec_neu) const;
+template bool Location::get_vector_from_origin_NEU_cm<Vector3p>(Vector3p &vec_neu) const;
 #endif
 
 #endif  // AP_AHRS_ENABLED
