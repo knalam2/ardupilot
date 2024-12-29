@@ -141,16 +141,53 @@ AP_AHRS_DCM::update()
 
 void AP_AHRS_DCM::get_results(AP_AHRS_Backend::Estimates &results)
 {
+    results.initialised = true;
+    results.healthy = healthy();
+
+    results.primary_imu_index = AP::ins().get_first_usable_gyro();
+
     results.roll_rad = roll;
     results.pitch_rad = pitch;
     results.yaw_rad = yaw;
 
     results.dcm_matrix = _body_dcm_matrix;
+    results.quat.from_rotation_matrix(_dcm_matrix);
+    results.attitude_valid = true;
+
     results.gyro_estimate = _omega;
     results.gyro_drift = _omega_I;
     results.accel_ef = _accel_ef;
 
+    results.velocity_NED_valid = get_velocity_NED(results.velocity_NED);
+    results.vert_pos_rate_D_valid = get_vert_pos_rate_D(results.vert_pos_rate_D);
+
+    results.groundspeed_vector = groundspeed_vector();
+
     results.location_valid = get_location(results.location);
+
+    // origin for local position:
+    results.origin = last_origin;
+    if (results.origin.is_zero()) {
+        // use home if we never have had an origin
+        results.origin = AP::ahrs().get_home();
+    }
+    results.origin_valid = !results.origin.is_zero();
+
+    results.relative_position_NED_origin_valid = get_relative_position_NED_origin(results.relative_position_NED_origin);
+    // derivative values of NED_origin:
+    results.relative_position_NE_origin = results.relative_position_NED_origin.xy();
+    results.relative_position_NE_origin_valid = results.relative_position_NED_origin_valid;
+    results.relative_position_D_origin = results.relative_position_NED_origin.z;
+    results.relative_position_D_origin_valid = results.relative_position_NED_origin_valid;
+
+    // wind estimation:
+    results.wind = _wind;
+    results.wind_valid = true;
+
+    // lower gains in VTOL controllers when flying on DCM:
+    results.ekfGndSpdLimit = 50.0;
+    results.controlScaleXY = 0.5;
+
 }
 
 /*
@@ -488,13 +525,6 @@ bool AP_AHRS_DCM::use_compass(void)
     }
 
     // use the compass
-    return true;
-}
-
-// return the quaternion defining the rotation from NED to XYZ (body) axes
-bool AP_AHRS_DCM::get_quaternion(Quaternion &quat) const
-{
-    quat.from_rotation_matrix(_dcm_matrix);
     return true;
 }
 
@@ -1186,9 +1216,7 @@ Vector2f AP_AHRS_DCM::groundspeed_vector(void)
     const bool gotGPS = (AP::gps().status() >= AP_GPS::GPS_OK_FIX_2D);
     if (gotAirspeed) {
         const Vector2f airspeed_vector{_cos_yaw * airspeed, _sin_yaw * airspeed};
-        Vector3f wind;
-        UNUSED_RESULT(wind_estimate(wind));
-        gndVelADS = airspeed_vector + wind.xy();
+        gndVelADS = airspeed_vector + _wind.xy();
     }
 
     // Generate estimate of ground speed vector using GPS
@@ -1233,10 +1261,8 @@ Vector2f AP_AHRS_DCM::groundspeed_vector(void)
         Vector2f ret{_cos_yaw, _sin_yaw};
         ret *= airspeed;
         // adjust for estimated wind
-        Vector3f wind;
-        UNUSED_RESULT(wind_estimate(wind));
-        ret.x += wind.x;
-        ret.y += wind.y;
+        ret.x += _wind.x;
+        ret.y += _wind.y;
         return ret;
     }
 
@@ -1275,10 +1301,6 @@ bool AP_AHRS_DCM::pre_arm_check(bool requires_position, char *failure_msg, uint8
 bool AP_AHRS_DCM::get_origin(Location &ret) const
 {
     ret = last_origin;
-    if (ret.is_zero()) {
-        // use home if we never have had an origin
-        ret = AP::ahrs().get_home();
-    }
     return !ret.is_zero();
 }
 
@@ -1296,26 +1318,6 @@ bool AP_AHRS_DCM::get_relative_position_NED_origin(Vector3f &posNED) const
     return true;
 }
 
-bool AP_AHRS_DCM::get_relative_position_NE_origin(Vector2f &posNE) const
-{
-    Vector3f posNED;
-    if (!AP_AHRS_DCM::get_relative_position_NED_origin(posNED)) {
-        return false;
-    }
-    posNE = posNED.xy();
-    return true;
-}
-
-bool AP_AHRS_DCM::get_relative_position_D_origin(float &posD) const
-{
-    Vector3f posNED;
-    if (!AP_AHRS_DCM::get_relative_position_NED_origin(posNED)) {
-        return false;
-    }
-    posD = posNED.z;
-    return true;
-}
-
 void AP_AHRS_DCM::send_ekf_status_report(GCS_MAVLINK &link) const
 {
 }
@@ -1324,13 +1326,6 @@ void AP_AHRS_DCM::send_ekf_status_report(GCS_MAVLINK &link) const
 bool AP_AHRS_DCM::yaw_source_available(void) const
 {
     return AP::compass().use_for_yaw();
-}
-
-void AP_AHRS_DCM::get_control_limits(float &ekfGndSpdLimit, float &ekfNavVelGainScaler) const
-{
-    // lower gains in VTOL controllers when flying on DCM
-    ekfGndSpdLimit = 50.0;
-    ekfNavVelGainScaler = 0.5;
 }
 
 #endif  // AP_AHRS_DCM_ENABLED
