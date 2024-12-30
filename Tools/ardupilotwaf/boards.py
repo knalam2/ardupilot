@@ -1018,7 +1018,6 @@ class esp32(Board):
         # this makes sure we get the correct subtype
         env.DEFINES.update(
             CONFIG_HAL_BOARD_SUBTYPE = 'HAL_BOARD_SUBTYPE_ESP32_%s' %  tt.upper() ,
-            HAL_HAVE_HARDWARE_DOUBLE = '1',
         )
 
         if self.name.endswith("empty"):
@@ -1063,6 +1062,14 @@ class esp32(Board):
 
         # wrap malloc to ensure memory is zeroed
         env.LINKFLAGS += ['-Wl,--wrap,malloc']
+
+        # TODO: remove once hwdef.dat support is in place
+        defaults_file = 'libraries/AP_HAL_ESP32/hwdef/%s/defaults.parm' % self.get_name()
+        if os.path.exists(defaults_file):
+            env.ROMFS_FILES += [('defaults.parm', defaults_file)]
+            env.DEFINES.update(
+                HAL_PARAM_DEFAULTS_PATH='"@ROMFS/defaults.parm"',
+            )
 
         env.INCLUDES += [
                 cfg.srcnode.find_dir('libraries/AP_HAL_ESP32/boards').abspath(),

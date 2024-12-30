@@ -9976,6 +9976,15 @@ class AutoTestCopter(vehicle_test_suite.TestSuite):
         self.change_mode('ALT_HOLD')
         self.change_mode('SMART_RTL')
 
+    def SMART_RTL_Repeat(self):
+        '''Test whether Smart RTL catches the repeat'''
+        self.takeoff(alt_min=10, mode='GUIDED')
+        self.set_rc(3, 1500)
+        self.change_mode("CIRCLE")
+        self.delay_sim_time(1300)
+        self.change_mode("SMART_RTL")
+        self.wait_disarmed()
+
     def GPSForYawCompassLearn(self):
         '''Moving baseline GPS yaw - with compass learning'''
         self.context_push()
@@ -12272,6 +12281,57 @@ class AutoTestCopter(vehicle_test_suite.TestSuite):
         # restart GPS driver
         self.reboot_sitl()
 
+    def ScriptingFlipMode(self):
+        '''test adding custom mode from scripting'''
+        # Really it would be nice to check for the AVAILABLE_MODES message, but pymavlink does not understand them yet.
+
+        # enable scripting and install flip script
+        self.set_parameters({
+            "SCR_ENABLE": 1,
+        })
+        self.install_example_script_context('Flip_Mode.lua')
+        self.reboot_sitl()
+
+        # Takeoff in loiter
+        self.takeoff(10, mode="LOITER")
+
+        # Try and switch to flip, should not be posible from loiter
+        try:
+            self.change_mode(100, timeout=10)
+        except AutoTestTimeoutException:
+            self.progress("PASS not able to enter from loiter")
+
+        # Should be alowd to enter from alt hold
+        self.change_mode("ALT_HOLD")
+        self.change_mode(100)
+
+        # Should return to previous mode after flipping
+        self.wait_mode("ALT_HOLD")
+
+        # Test done
+        self.land_and_disarm()
+
+    def RTLYaw(self):
+        '''test that vehicle yaws to original heading on RTL'''
+        # 0 is WP_YAW_BEHAVIOR_NONE
+        # 1 is WP_YAW_BEHAVIOR_LOOK_AT_NEXT_WP
+        # 2 is WP_YAW_BEHAVIOR_LOOK_AT_NEXT_WP_EXCEPT_RTL
+        # 3 is WP_YAW_BEHAVIOR_LOOK_AHEAD
+        for behaviour in 1, 3:
+            self.set_parameters({
+                'WP_YAW_BEHAVIOR': behaviour,
+            })
+            self.change_mode('GUIDED')
+            original_heading = self.get_heading()
+            target_heading = 100
+            if original_heading - target_heading < 90:
+                raise NotAchievedException("Bad initial heading")
+            self.takeoff(10, mode='GUIDED')
+            self.guided_achieve_heading(target_heading)
+            self.change_mode('RTL')
+            self.wait_heading(original_heading)
+            self.wait_disarmed()
+
     def tests2b(self):  # this block currently around 9.5mins here
         '''return list of all tests'''
         ret = ([
@@ -12299,7 +12359,9 @@ class AutoTestCopter(vehicle_test_suite.TestSuite):
             self.AP_Avoidance,
             self.SMART_RTL,
             self.SMART_RTL_EnterLeave,
+            self.SMART_RTL_Repeat,
             self.RTL_TO_RALLY,
+            self.RTLYaw,
             self.FlyEachFrame,
             self.GPSBlending,
             self.GPSWeightedBlending,
@@ -12379,6 +12441,7 @@ class AutoTestCopter(vehicle_test_suite.TestSuite):
             self.ScriptingAHRSSource,
             self.CommonOrigin,
             self.TestTetherStuck,
+            self.ScriptingFlipMode,
         ])
         return ret
 
@@ -12461,6 +12524,7 @@ class AutoTestCopter(vehicle_test_suite.TestSuite):
             "GPSForYawCompassLearn": "Vehicle currently crashed in spectacular fashion",
             "CompassMot": "Cuases an arithmetic exception in the EKF",
             "SMART_RTL_EnterLeave": "Causes a panic",
+            "SMART_RTL_Repeat": "Currently fails due to issue with loop detection",
         }
 
 
