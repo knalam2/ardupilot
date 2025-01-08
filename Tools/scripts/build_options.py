@@ -146,7 +146,7 @@ BUILD_OPTIONS = [
     Feature('Camera', 'Camera_ThermalRange', 'AP_CAMERA_SEND_THERMAL_RANGE_ENABLED', 'Enable GCS camera thermal range', 0, 'Camera,MOUNT'),  # noqa: E501
     Feature('Camera', 'Camera_Info_From_Script', 'AP_CAMERA_INFO_FROM_SCRIPT_ENABLED', 'Enable Camera information messages via Lua script', 0, 'Camera,SCRIPTING'), # noqa
 
-    Feature('Camera', 'RUNCAM', 'AP_CAMERA_RUNCAM_ENABLED', 'Enable RunCam control', 0, None),
+    Feature('Camera', 'RUNCAM', 'AP_CAMERA_RUNCAM_ENABLED', 'Enable RunCam control', 0, 'Camera'),
 
     Feature('Copter', 'MODE_ZIGZAG', 'MODE_ZIGZAG_ENABLED', 'Enable Mode ZigZag', 0, None),
     Feature('Copter', 'MODE_SYSTEMID', 'MODE_SYSTEMID_ENABLED', 'Enable Mode SystemID', 0, 'Logging'),
@@ -345,7 +345,7 @@ BUILD_OPTIONS = [
     Feature('IMU', 'HarmonicNotches', 'AP_INERTIALSENSOR_HARMONICNOTCH_ENABLED', 'Enable InertialSensor harmonic notch filters', 0, None),  # noqa
     Feature('IMU', 'BatchSampler', 'AP_INERTIALSENSOR_BATCHSAMPLER_ENABLED', 'Enable Batch sampler', 0, None),  # noqa
 
-    Feature('Other', 'RateLoopThread', 'AP_INERTIALSENSOR_FAST_SAMPLE_WINDOW_ENABLED', 'Enable Rate Loop Thread', 0, None),  # noqa
+    Feature('Other', 'RateLoopThread', 'AP_INERTIALSENSOR_FAST_SAMPLE_WINDOW_ENABLED', 'Enable Rate Loop Thread', 0, 'HarmonicNotches'),  # noqa
     Feature('Other', 'GyroFFT', 'HAL_GYROFFT_ENABLED', 'Enable In-Flight gyro FFT calculations', 0, None),
     Feature('Other', 'NMEA_OUTPUT', 'HAL_NMEA_OUTPUT_ENABLED', 'Enable NMEA output', 0, None),
     Feature('Other', 'SDCARD_FORMATTING', 'AP_FILESYSTEM_FORMAT_ENABLED', 'Enable Formatting of microSD cards', 0, None),
@@ -370,8 +370,6 @@ BUILD_OPTIONS = [
     Feature('MAVLink', 'MAVLINK_VERSION_REQUEST', 'AP_MAVLINK_AUTOPILOT_VERSION_REQUEST_ENABLED', 'Enable Old AUTOPILOT_VERSION_REQUEST mesage', 0, None),  # noqa
     Feature('MAVLink', 'REQUEST_AUTOPILOT_CAPA', 'AP_MAVLINK_MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES_ENABLED', 'Enable Old REQUEST_AUTOPILOT_CAPABILITIES command', 0, None),  # noqa
     Feature('MAVLink', 'MAV_MSG_RELAY_STATUS', 'AP_MAVLINK_MSG_RELAY_STATUS_ENABLED', 'Enable Send RELAY_STATUS message', 0, 'RELAY'),  # noqa
-    Feature('MAVLink', 'MAV_MSG_MOUNT_CONTROL', 'AP_MAVLINK_MSG_MOUNT_CONTROL_ENABLED', 'Enable Deprecated MOUNT_CONTROL message', 0, "MOUNT"),  # noqa
-    Feature('MAVLink', 'MAV_MSG_MOUNT_CONFIGURE', 'AP_MAVLINK_MSG_MOUNT_CONFIGURE_ENABLED', 'Enable Deprecated MOUNT_CONFIGURE message', 0, "MOUNT"),  # noqa
     Feature('MAVLink', 'AP_MAVLINK_BATTERY2_ENABLED', 'AP_MAVLINK_BATTERY2_ENABLED', 'Enable Send old BATTERY2 message', 0, None),  # noqa
     Feature('MAVLink', 'MAV_DEVICE_OP', 'AP_MAVLINK_MSG_DEVICE_OP_ENABLED', 'Enable DeviceOp MAVLink messages', 0, None),  # noqa
     Feature('MAVLink', 'MAV_SERVO_RELAY', 'AP_MAVLINK_SERVO_RELAY_ENABLED', 'Enable ServoRelay MAVLink messages', 0, 'SERVORELAY_EVENTS'),  # noqa
@@ -434,10 +432,10 @@ BUILD_OPTIONS = [
     Feature('Filesystem', 'APJ_TOOL_PARAMETERS', 'FORCE_APJ_DEFAULT_PARAMETERS', 'Enable apj_tool parameter area', 0, None),
 
     Feature('Networking', 'PPP', 'AP_NETWORKING_BACKEND_PPP', 'Enable PPP networking', 0, None),
-    Feature('Networking', 'CAN MCAST', 'AP_NETWORKING_CAN_MCAST_ENABLED', 'Enable CAN multicast bridge', 0, None),
+    # Feature('Networking', 'CAN MCAST', 'AP_NETWORKING_CAN_MCAST_ENABLED', 'Enable CAN multicast bridge', 0, None),
 
     Feature('CAN', 'DroneCAN', 'HAL_ENABLE_DRONECAN_DRIVERS', 'Enable DroneCAN support', 0, None),
-    Feature('CAN', 'CAN Logging', 'AP_CAN_LOGGING_ENABLED', 'Enable CAN logging support', 0, None),
+    Feature('CAN', 'CAN Logging', 'AP_CAN_LOGGING_ENABLED', 'Enable CAN logging support', 0, 'Logging'),
 ]
 
 BUILD_OPTIONS.sort(key=lambda x: (x.category + x.label))
