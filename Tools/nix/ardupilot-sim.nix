@@ -24,9 +24,9 @@ in flake-utils.lib.eachSystem supported-systems (system:
 
         nativeBuildInputs = [ pkgs.wafHook ];
         patches = [
-          ./patches/ardusim_patches/runnable_status.patch
-          ./patches/ardusim_patches/remove_gcc_Werror.patch
-          ./patches/ardusim_patches/fake_git_rev.patch
+          ./patches/runnable_status.patch
+          ./patches/remove_gcc_Werror.patch
+          ./patches/fake_git_rev.patch
         ];
         wafPath = "modules/waf/waf-light";
         wafConfigureFlags = [ "--board sitl" ];
