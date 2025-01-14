@@ -79,25 +79,16 @@ void Plane::setup_glide_slope(void)
             reset_offset_altitude();
         }
         break;
-
     case Mode::Number::AUTO:
-
-        //climb without doing glide slope if option is enabled
+        // climb without doing glide slope if option is enabled
         if (!above_location_current(next_WP_loc) && plane.flight_option_enabled(FlightOptions::IMMEDIATE_CLIMB_IN_AUTO)) {
             reset_offset_altitude();
             break;
         }
 
-        // we only do glide slide handling in AUTO when above 20m or
-        // when descending. The 20 meter threshold is arbitrary, and
-        // is basically to prevent situations where we try to slowly
-        // gain height at low altitudes, potentially hitting
-        // obstacles.
-        if (adjusted_relative_altitude_cm() > 2000 || above_location_current(next_WP_loc)) {
-            set_offset_altitude_location(prev_WP_loc, next_WP_loc);
-        } else {
-            reset_offset_altitude();
-        }
+        // otherwise we set up an altitude slope for this leg
+        set_offset_altitude_location(prev_WP_loc, next_WP_loc);
+
         break;
     default:
         reset_offset_altitude();
@@ -289,6 +280,7 @@ void Plane::change_target_altitude(int32_t change_cm)
     }
 #endif
 }
+
 /*
   change target altitude by a proportion of the target altitude offset
   (difference in height to next WP from previous WP). proportion
@@ -302,10 +294,25 @@ void Plane::change_target_altitude(int32_t change_cm)
  */
 void Plane::set_target_altitude_proportion(const Location &loc, float proportion)
 {
+    // We only do altitude slope handling when above CLIMB_SLOPE_HGT or when
+    // descending. This is meant to prevent situations where we try to slowly
+    // gain height at low altitudes, potentially hitting obstacles.
+    if (target_altitude.offset_cm > 0 &&
+        adjusted_relative_altitude_cm() < (g2.waypoint_climb_slope_height_min * 100)) {
+        Location min_loc = loc;
+        min_loc.set_alt_cm(
+            g2.waypoint_climb_slope_height_min * 100, Location::AltFrame::ABOVE_HOME);
+        set_target_altitude_location(min_loc);
+
+        return;
+    }
+
     set_target_altitude_location(loc);
     proportion = constrain_float(proportion, 0.0f, 1.0f);
+
     change_target_altitude(-target_altitude.offset_cm*proportion);
-    //rebuild the glide slope if we are above it and supposed to be climbing
+
+    // rebuild the glide slope if we are above it and supposed to be climbing
     if(g.glide_slope_threshold > 0) {
         if(target_altitude.offset_cm > 0 && calc_altitude_error_cm() < -100 * g.glide_slope_threshold) {
             set_target_altitude_location(loc);
