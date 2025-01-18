@@ -1623,6 +1623,17 @@ INCLUDE common.ld
             self.error("Bad SPI device: %s" % dev)
         return 'hal.spi->get_device("%s")' % a[1]
 
+    def get_spi_device_key(self, dev):
+        '''Return a unqiue key for an SPI device'''
+        a = dev.split(':')
+        if len(a) != 2:
+            self.error("Bad SPI device: %s" % dev)
+        for spi in self.spidev:
+            if spi[0] == a[1]:
+                key = spi[1] + spi[2]
+                return key
+        return None
+
     def parse_i2c_device(self, dev):
         '''parse a I2C:xxx:xxx device item'''
         a = dev.split(':')
@@ -1650,6 +1661,7 @@ INCLUDE common.ld
         devlist = []
         wrapper = ''
         seen = set()
+        unique_imus = {}
         for dev in self.imu_list:
             if self.seen_str(dev) in seen:
                 self.error("Duplicate IMU: %s" % self.seen_str(dev))
@@ -1666,8 +1678,10 @@ INCLUDE common.ld
                 dev = dev[:-1]
             for i in range(1, len(dev)):
                 if dev[i].startswith("SPI:"):
+                    unique_imus[self.get_spi_device_key(dev[i])] = dev[i]
                     dev[i] = self.parse_spi_device(dev[i])
                 elif dev[i].startswith("I2C:"):
+                    unique_imus[dev[i]] = dev[i]
                     (wrapper, dev[i]) = self.parse_i2c_device(dev[i])
             n = len(devlist)+1
             devlist.append('HAL_INS_PROBE%u' % n)
@@ -1685,9 +1699,8 @@ INCLUDE common.ld
                 f.write(
                     '#define HAL_INS_PROBE%u %s ADD_BACKEND(AP_InertialSensor_%s::probe(*this,%s))\n'
                     % (n, wrapper, driver, ','.join(dev[1:])))
-        if len(devlist) > 0:
-            if len(devlist) < 3:
-                f.write('#define INS_MAX_INSTANCES %u\n' % len(devlist))
+        if len(unique_imus) > 0 and len(unique_imus) <= 3:
+            f.write('#define INS_MAX_INSTANCES %u\n' % len(unique_imus))
             f.write('#define HAL_INS_PROBE_LIST %s\n\n' % ';'.join(devlist))
 
     def write_MAG_config(self, f):
