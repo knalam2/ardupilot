@@ -12,11 +12,16 @@ class AP_RangeFinder_USD1_Serial : public AP_RangeFinder_Backend_Serial
 
 public:
 
+    AP_RangeFinder_USD1_Serial(RangeFinder::RangeFinder_State &_state,
+                        AP_RangeFinder_Params &_params);
+
     static AP_RangeFinder_Backend_Serial *create(
         RangeFinder::RangeFinder_State &_state,
         AP_RangeFinder_Params &_params) {
         return NEW_NOTHROW AP_RangeFinder_USD1_Serial(_state, _params);
     }
+
+    static const struct AP_Param::GroupInfo var_info[];
 
 protected:
 
@@ -34,8 +39,6 @@ protected:
 
 private:
 
-    using AP_RangeFinder_Backend_Serial::AP_RangeFinder_Backend_Serial;
-
     // detect USD1_Serial Firmware Version
     bool detect_version(void);
 
@@ -47,6 +50,7 @@ private:
     bool     _version_known;
     uint8_t  _header;
     uint8_t  _version;
+    AP_Int32 snr_min;
 };
 
 #endif  // AP_RANGEFINDER_USD1_SERIAL_ENABLED
