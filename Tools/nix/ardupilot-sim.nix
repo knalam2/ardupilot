@@ -15,9 +15,9 @@ in flake-utils.lib.eachSystem supported-systems (system:
       ardusim = pkgs.stdenv.mkDerivation {
         name = "ardusim";
         src = builtins.fetchGit {
-          url = "https://github.com/ArduPilot/ardupilot.git";
-          rev = "df2be63e21217b626be53c7c9e98f37410b12126";
-          ref = "Rover-4.4";
+          url = "https://github.com/gsubmarine/ardupilot.git";
+          rev = "45c9dad0e5f0868423c9853570039798897b1aec";
+          ref = "Rover4.4_builderror_patch";
           submodules = true;
         };
         buildInputs = [ python pkgs.git pkgs.rsync pkgs.gcc ];

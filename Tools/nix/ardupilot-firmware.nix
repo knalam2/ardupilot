@@ -20,9 +20,7 @@ in flake-utils.lib.eachSystem supported-systems (system:
         python
         pkgs.git
         pkgs.rsync
-        pkgs.gcc-arm-embedded
         pkgs.gcc_multi
-        pkgs.wafHook
       ];
       patches = [
         ./patches/ardusim_patches/runnable_status.patch
