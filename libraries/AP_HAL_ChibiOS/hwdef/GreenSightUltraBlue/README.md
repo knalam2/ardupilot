@@ -9,10 +9,14 @@ The UltraBlue flight controller is sold by [GreenSight](https://greensightag.com
  - Three IMUs: two BMI088 units and one ICM20649
  - Internal heater for IMU temperature control
  - DPS310 SPI barometer
+ - microSD card slot
+ - DF9-41S-1V(32) Hirose Mezzanine Connector
 
 ## Connector Overview
 
-<img src="UltraBlue_connector_overview.png" alt="UltraBlue Board" title="UltraBlue Board" style="width: 30%;" >
+<img src="UltraBlue_connector_overview_front.png" alt="UltraBlue Board" title="UltraBlue Board" style="width: 30%;" >
+
+<img src="UltraBlue_connector_overview_back.png" alt="UltraBlue Board" title="UltraBlue Board" style="width: 30%;" >
 
 
 ## UART Mapping
