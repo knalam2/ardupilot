@@ -289,6 +289,7 @@ class TestBuildOptions(object):
             feature_define_whitelist.add('AP_WINCH_PWM_ENABLED')
             feature_define_whitelist.add(r'AP_MOTORS_FRAME_.*_ENABLED')
             feature_define_whitelist.add('AP_COPTER_ADVANCED_FAILSAFE_ENABLED')
+            feature_define_whitelist.add('AP_INERTIALSENSOR_FAST_SAMPLE_WINDOW_ENABLED')
 
         if target.lower() != "plane":
             # only on Plane:
@@ -304,6 +305,9 @@ class TestBuildOptions(object):
             feature_define_whitelist.add('AP_PLANE_OFFBOARD_GUIDED_SLEW_ENABLED')
             feature_define_whitelist.add('HAL_QUADPLANE_ENABLED')
             feature_define_whitelist.add('AP_BATTERY_WATT_MAX_ENABLED')
+            feature_define_whitelist.add('MODE_AUTOLAND_ENABLED')
+            feature_define_whitelist.add('AP_PLANE_GLIDER_PULLUP_ENABLED')
+            feature_define_whitelist.add('AP_QUICKTUNE_ENABLED')
 
         if target.lower() not in ["plane", "copter"]:
             feature_define_whitelist.add('HAL_ADSB_ENABLED')

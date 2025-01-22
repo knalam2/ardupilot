@@ -2300,7 +2300,7 @@ class TestSuite(ABC):
     def reboot_check_valgrind_log(self):
         valgrind_log = util.valgrind_log_filepath(binary=self.binary,
                                                   model=self.frame)
-        if os.path.getsize(valgrind_log) > 0:
+        if os.path.isfile(valgrind_log) and (os.path.getsize(valgrind_log) > 0):
             backup_valgrind_log = ("%s-%s" % (str(int(time.time())), valgrind_log))
             shutil.move(valgrind_log, backup_valgrind_log)
 
@@ -2721,9 +2721,6 @@ class TestSuite(ABC):
             "SIM_SHIP_PSIZE",
             "SIM_SHIP_SPEED",
             "SIM_SHIP_SYSID",
-            "SIM_SONAR_POS_X",
-            "SIM_SONAR_POS_Y",
-            "SIM_SONAR_POS_Z",
             "SIM_TA_ENABLE",
             "SIM_VIB_FREQ_X",
             "SIM_VIB_FREQ_Y",
@@ -5279,11 +5276,12 @@ class TestSuite(ABC):
                                                   ):
         '''returns a list of mission-item-ints from filepath'''
         # self.progress("filepath: %s" % filepath)
-        self.progress("Loading {loaderclass.itemstype()} (%s)" % os.path.basename(filepath))
         wploader = loaderclass(
             target_system=target_system,
             target_component=target_component
         )
+        itemstype = mavutil.mavlink.enums["MAV_MISSION_TYPE"][wploader.mav_mission_type()]
+        self.progress(f"Loading {itemstype} ({os.path.basename(filepath)}")
         wploader.load(filepath)
         return [self.wp_to_mission_item_int(x, wploader.mav_mission_type()) for x in wploader.wpoints]  # noqa:502
 
@@ -5825,8 +5823,8 @@ class TestSuite(ABC):
     def analog_rangefinder_parameters(self):
         return {
             "RNGFND1_TYPE": 1,
-            "RNGFND1_MIN_CM": 0,
-            "RNGFND1_MAX_CM": 4000,
+            "RNGFND1_MIN": 0,
+            "RNGFND1_MAX": 40.00,
             "RNGFND1_SCALING": 12.12,
             "RNGFND1_PIN": 0,
         }
@@ -7210,6 +7208,8 @@ class TestSuite(ABC):
         if m.distance > dist_max:
             raise NotAchievedException("above max height (%f > %f)" %
                                        (m.distance, dist_max))
+
+        self.progress(f"Rangefinder distance {m.distance} is between {dist_min} and {dist_max}")
 
     def assert_distance_sensor_quality(self, quality):
         m = self.assert_receive_message('DISTANCE_SENSOR')

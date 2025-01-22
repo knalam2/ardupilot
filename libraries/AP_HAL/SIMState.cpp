@@ -266,7 +266,6 @@ void SIMState::fdm_input_local(void)
 
     set_height_agl();
 
-    _synthetic_clock_mode = true;
     _update_count++;
 }
 
@@ -345,6 +344,19 @@ void SIMState::_simulator_servos(struct sitl_input &input)
             }
         }
     }
+
+#if AP_SIM_VOLZ_ENABLED
+    // update simulation input based on data received via "serial" to
+    // Volz servos:
+    if (_sitl->volz_sim.enabled()) {
+        _sitl->volz_sim.update_sitl_input_pwm(input);
+        for (uint8_t i=0; i<ARRAY_SIZE(input.servos); i++) {
+            if (input.servos[i] != 0 && input.servos[i] < 1000) {
+                AP_HAL::panic("Bad input servo value (%u)", input.servos[i]);
+            }
+        }
+    }
+#endif
 
     float voltage = 0;
     _current = 0;

@@ -252,10 +252,18 @@ singleton RangeFinder rename rangefinder
 singleton RangeFinder method num_sensors uint8_t
 singleton RangeFinder method has_orientation boolean Rotation'enum ROTATION_NONE ROTATION_MAX-1
 singleton RangeFinder method distance_cm_orient uint16_t Rotation'enum ROTATION_NONE ROTATION_MAX-1
+singleton RangeFinder method distance_cm_orient deprecate Use distance_orient (in metres)
+singleton RangeFinder method distance_orient float Rotation'enum ROTATION_NONE ROTATION_MAX-1
 singleton RangeFinder method signal_quality_pct_orient int8_t Rotation'enum ROTATION_NONE ROTATION_MAX-1
-singleton RangeFinder method max_distance_cm_orient uint16_t Rotation'enum ROTATION_NONE ROTATION_MAX-1
-singleton RangeFinder method min_distance_cm_orient uint16_t Rotation'enum ROTATION_NONE ROTATION_MAX-1
+singleton RangeFinder method max_distance_cm_orient int32_t Rotation'enum ROTATION_NONE ROTATION_MAX-1
+singleton RangeFinder method max_distance_cm_orient deprecate Use max_distance_orient (in metres)
+singleton RangeFinder method min_distance_cm_orient int32_t Rotation'enum ROTATION_NONE ROTATION_MAX-1
+singleton RangeFinder method min_distance_cm_orient deprecate Use min_distance_orient (in metres)
 singleton RangeFinder method ground_clearance_cm_orient uint16_t Rotation'enum ROTATION_NONE ROTATION_MAX-1
+singleton RangeFinder method ground_clearance_cm_orient deprecate Use ground_clearance_orient (in metres)
+singleton RangeFinder method max_distance_orient float Rotation'enum ROTATION_NONE ROTATION_MAX-1
+singleton RangeFinder method min_distance_orient float Rotation'enum ROTATION_NONE ROTATION_MAX-1
+singleton RangeFinder method ground_clearance_orient float Rotation'enum ROTATION_NONE ROTATION_MAX-1
 singleton RangeFinder method status_orient uint8_t Rotation'enum ROTATION_NONE ROTATION_MAX-1
 singleton RangeFinder method has_data_orient boolean Rotation'enum ROTATION_NONE ROTATION_MAX-1
 singleton RangeFinder method get_pos_offset_orient Vector3f Rotation'enum ROTATION_NONE ROTATION_MAX-1
@@ -1042,3 +1050,23 @@ include AP_TemperatureSensor/AP_TemperatureSensor.h
 singleton AP_TemperatureSensor depends AP_TEMPERATURE_SENSOR_ENABLED
 singleton AP_TemperatureSensor rename temperature_sensor
 singleton AP_TemperatureSensor method get_temperature boolean float'Null uint8_t'skip_check
+
+include AP_Servo_Telem/AP_Servo_Telem.h depends AP_SERVO_TELEM_ENABLED
+include AP_Servo_Telem/AP_Servo_Telem_config.h
+singleton AP_Servo_Telem depends AP_SERVO_TELEM_ENABLED
+singleton AP_Servo_Telem rename servo_telem
+singleton AP_Servo_Telem method get_telem boolean uint8_t'skip_check AP_Servo_Telem::TelemetryData'Null
+
+userdata AP_Servo_Telem::TelemetryData depends AP_SERVO_TELEM_ENABLED
+userdata AP_Servo_Telem::TelemetryData rename AP_Servo_Telem_Data
+userdata AP_Servo_Telem::TelemetryData field command_position float'skip_check read valid_mask present_types AP_Servo_Telem::TelemetryData::Types::COMMANDED_POSITION
+userdata AP_Servo_Telem::TelemetryData field measured_position float'skip_check read valid_mask present_types AP_Servo_Telem::TelemetryData::Types::MEASURED_POSITION
+userdata AP_Servo_Telem::TelemetryData field force float'skip_check read valid_mask present_types AP_Servo_Telem::TelemetryData::Types::FORCE
+userdata AP_Servo_Telem::TelemetryData field speed float'skip_check read valid_mask present_types AP_Servo_Telem::TelemetryData::Types::SPEED
+userdata AP_Servo_Telem::TelemetryData field voltage float'skip_check read valid_mask present_types AP_Servo_Telem::TelemetryData::Types::VOLTAGE
+userdata AP_Servo_Telem::TelemetryData field current float'skip_check read valid_mask present_types AP_Servo_Telem::TelemetryData::Types::CURRENT
+userdata AP_Servo_Telem::TelemetryData field duty_cycle uint8_t'skip_check read valid_mask present_types AP_Servo_Telem::TelemetryData::Types::DUTY_CYCLE
+userdata AP_Servo_Telem::TelemetryData field motor_temperature_cdeg int16_t'skip_check read valid_mask present_types AP_Servo_Telem::TelemetryData::Types::MOTOR_TEMP
+userdata AP_Servo_Telem::TelemetryData field pcb_temperature_cdeg int16_t'skip_check read valid_mask present_types AP_Servo_Telem::TelemetryData::Types::PCB_TEMP
+userdata AP_Servo_Telem::TelemetryData field status_flags uint8_t'skip_check read valid_mask present_types AP_Servo_Telem::TelemetryData::Types::STATUS
+userdata AP_Servo_Telem::TelemetryData field last_update_ms uint32_t'skip_check read

@@ -1395,9 +1395,6 @@ function camera:take_picture(instance) end
 ---@class (exact) AP_Camera__camera_state_t_ud
 local AP_Camera__camera_state_t_ud = {}
 
----@return AP_Camera__camera_state_t_ud
-function AP_Camera__camera_state_t() end
-
 -- get field
 ---@return Vector2f_ud
 function AP_Camera__camera_state_t_ud:tracking_p1() end
@@ -3160,29 +3157,53 @@ function rangefinder:status_orient(orientation) end
 -- desc
 ---@param orientation integer
 ---@return integer
+---@deprecated -- Use ground_clearance_orient (in metres)
 function rangefinder:ground_clearance_cm_orient(orientation) end
 
 -- desc
 ---@param orientation integer
 ---@return integer
+---@deprecated -- Use min_distance_orient (in metres)
 function rangefinder:min_distance_cm_orient(orientation) end
 
 -- desc
 ---@param orientation integer
 ---@return integer
+---@deprecated -- Use max_distance_orient (in metres)
 function rangefinder:max_distance_cm_orient(orientation) end
 
 -- desc
 ---@param orientation integer
 ---@return integer
+---@deprecated -- Use distance_orient (in metres)
 function rangefinder:distance_cm_orient(orientation) end
+
+-- Configured distance between rangefinder of a particular orientation and the vehicle's side which would rest on the ground.  Usually used for a downward-facing rangefinder to give ground clearance.
+---@param orientation integer
+---@return number
+function rangefinder:ground_clearance_orient(orientation) end
+
+-- Configured minimum distance the rangefinder in supplied orientation can measure
+---@param orientation integer
+---@return number
+function rangefinder:min_distance_orient(orientation) end
+
+-- Configured maximum distance the rangefinder in supplied orientation can measure
+---@param orientation integer
+---@return number
+function rangefinder:max_distance_orient(orientation) end
+
+-- Distance rangefinder in supplied orientation is currently measuring
+---@param orientation integer
+---@return number
+function rangefinder:distance_orient(orientation) end
 
 -- Current distance measurement signal quality for range finder at this orientation
 ---@param orientation integer
 ---@return integer
 function rangefinder:signal_quality_pct_orient(orientation) end
 
--- desc
+-- Returns true if there is a rangefinder measuring in supplied orientation
 ---@param orientation integer
 ---@return boolean
 function rangefinder:has_orientation(orientation) end
@@ -4015,7 +4036,6 @@ function networking:get_netmask_active() end
 function networking:get_ip_active() end
 
 -- visual odometry object
---@class visual_odom
 visual_odom = {}
 
 -- visual odometry health
@@ -4025,3 +4045,59 @@ function visual_odom:healthy() end
 -- visual odometry quality as a percentage from 1 to 100 or 0 if unknown
 ---@return integer
 function visual_odom:quality() end
+
+-- servo telemetry class
+servo_telem = {}
+
+-- get servo telem for the given servo number
+---@param servo_index integer -- 0 indexed servo number
+---@return AP_Servo_Telem_Data_ud|nil
+function servo_telem:get_telem(servo_index) end
+
+-- Servo telemtry userdata object
+---@class AP_Servo_Telem_Data_ud
+local AP_Servo_Telem_Data_ud = {}
+
+-- Get timestamp of last telem update
+---@return uint32_t_ud -- milliseconds since boot
+function AP_Servo_Telem_Data_ud:last_update_ms() end
+
+-- Get type spesfic status flags
+---@return integer|nil -- flags or nil if not available
+function AP_Servo_Telem_Data_ud:status_flags() end
+
+-- Get pcb temprature in centidegrees
+---@return integer|nil -- temperature in centidegrees or nil if not available
+function AP_Servo_Telem_Data_ud:pcb_temperature_cdeg() end
+
+-- Get motor temprature in centidegrees
+---@return integer|nil -- temperature in centidegrees or nil if not available
+function AP_Servo_Telem_Data_ud:motor_temperature_cdeg() end
+
+-- Get duty cycle
+---@return integer|nil -- duty cycle 0% to 100% or nil if not available
+function AP_Servo_Telem_Data_ud:duty_cycle() end
+
+-- get current
+---@return number|nil -- current in amps or nil if not available
+function AP_Servo_Telem_Data_ud:current() end
+
+-- get voltage
+---@return number|nil -- voltage in volts or nil if not available
+function AP_Servo_Telem_Data_ud:voltage() end
+
+-- get speed
+---@return number|nil -- speed in degrees per second or nil if not available
+function AP_Servo_Telem_Data_ud:speed() end
+
+-- get force
+---@return number|nil -- force in newton meters or nil if not available
+function AP_Servo_Telem_Data_ud:force() end
+
+-- get measured position
+---@return number|nil -- measured position in degrees or nil if not available
+function AP_Servo_Telem_Data_ud:measured_position() end
+
+-- get commanded position
+---@return number|nil -- comanded position in degrees or nil if not available
+function AP_Servo_Telem_Data_ud:command_position() end

@@ -236,6 +236,11 @@ const AP_Param::GroupInfo SIM::var_info[] = {
     // @Vector3Parameter: 1
     AP_GROUPINFO("IMU_POS",       53, SIM,  imu_pos_offset, 0),
     AP_SUBGROUPEXTENSION("",      54, SIM,  var_ins),
+    // @Param: SONAR_POS
+    // @DisplayName: Sonar Offsets
+    // @Description: XYZ position of the sonar relative to the body frame origin
+    // @Units: m
+    // @Vector3Parameter: 1
     AP_GROUPINFO("SONAR_POS",     55, SIM,  rngfnd_pos_offset, 0),
     // @Param: FLOW_POS
     // @DisplayName: Opflow Pos
@@ -708,6 +713,12 @@ const AP_Param::GroupInfo SIM::var_info3[] = {
     // @Description: Simulated OSD number of text rows
     // @Range: 10 100
     AP_GROUPINFO("OSD_ROWS",     54, SIM,  osd_rows, 16),
+#endif
+
+#if AP_SIM_VOLZ_ENABLED
+    // @Group: VOLZ_
+    // @Path: ./SIM_Volz.cpp
+    AP_SUBGROUPINFO(volz_sim, "VOLZ_", 55, SIM, Volz),
 #endif
 
 #ifdef SFML_JOYSTICK
