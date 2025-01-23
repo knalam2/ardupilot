@@ -1052,6 +1052,12 @@ class ChibiOSHWDef(object):
         else:
             self.env_vars['IOMCU_FW'] = 0
 
+        # check if heater pin defined
+        if 'HEATER' in self.bylabel.keys():
+            self.env_vars['IOMCU_FW_WITH_HEATER'] = 1
+        else:
+            self.env_vars['IOMCU_FW_WITH_HEATER'] = 0
+
         if self.get_config('PERIPH_FW', required=False):
             self.env_vars['PERIPH_FW'] = self.get_config('PERIPH_FW')
         else:
