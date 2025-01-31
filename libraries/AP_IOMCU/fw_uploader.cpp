@@ -101,6 +101,14 @@ bool AP_IOMCU::upload_fw(void)
     }
     debug("found bootloader revision: %u", unsigned(bl_rev));
 
+    if (bl_rev > 2) {
+        // verify the CRC of the IO firmware
+        if (verify_rev3(fw_size)) {
+            // already up to date, no need to update, just reboot
+            reboot();
+            return true;
+        }
+    }
     ret = erase();
     if (!ret) {
         debug("erase failed");
@@ -285,7 +293,7 @@ bool AP_IOMCU::erase()
     debug("erase...");
     send(PROTO_CHIP_ERASE);
     send(PROTO_EOC);
-    return get_sync(10000);
+    return get_sync(20000); // 20s timeout for erase
 }
 
 /*
@@ -421,12 +429,13 @@ bool AP_IOMCU::verify_rev3(uint32_t fw_size_local)
     /* compare the CRC sum from the IO with the one calculated */
     if (sum != crc) {
         debug("CRC wrong: received: 0x%x, expected: 0x%x", (unsigned)crc, (unsigned)sum);
+        get_sync();
         return false;
     }
 
     crc_is_ok = true;
 
-    return true;
+    return get_sync();
 }
 
 /*
