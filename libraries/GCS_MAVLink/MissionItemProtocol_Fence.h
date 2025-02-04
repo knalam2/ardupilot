@@ -33,6 +33,15 @@ protected:
     }
     bool clear_all_items() override WARN_IF_UNUSED;
 
+#if AP_MAVLINK_MISSION_OPAQUE_ID_ENABLED
+    uint32_t last_items_change_time_ms() const override {
+        return AP::fence()->polyfence().get_exclusion_polygon_update_ms();
+    }
+    HAL_Semaphore &get_items_semaphore() override {
+        return AP::fence()->polyfence().get_loaded_fence_semaphore();
+    }
+#endif  // AP_MAVLINK_MISSION_OPAQUE_ID_ENABLED
+
 private:
     class AC_Fence &_fence;
 
@@ -42,10 +51,7 @@ private:
     MAV_MISSION_RESULT replace_item(const mavlink_mission_item_int_t&) override WARN_IF_UNUSED;
     MAV_MISSION_RESULT append_item(const mavlink_mission_item_int_t&) override WARN_IF_UNUSED;
 
-    MAV_MISSION_RESULT get_item(const GCS_MAVLINK &_link,
-                                const mavlink_message_t &msg,
-                                const mavlink_mission_request_int_t &packet,
-                                mavlink_mission_item_int_t &ret_packet) override WARN_IF_UNUSED;
+    MAV_MISSION_RESULT get_item(uint16_t seq, mavlink_mission_item_int_t &ret_packet) override WARN_IF_UNUSED;
 
     void free_upload_resources() override;
     MAV_MISSION_RESULT allocate_receive_resources(const uint16_t count) override WARN_IF_UNUSED;

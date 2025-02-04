@@ -2,6 +2,8 @@
 
 #include "MissionItemProtocol.h"
 
+#include <AP_Mission/AP_Mission.h>
+
 class MissionItemProtocol_Waypoints : public MissionItemProtocol {
 public:
     MissionItemProtocol_Waypoints(class AP_Mission &_mission) :
@@ -38,6 +40,23 @@ protected:
         return MSG_NEXT_MISSION_REQUEST_WAYPOINTS;
     }
 
+    bool item_exists(uint16_t seq) const override {
+        // always allow home to be fetched:
+        if (seq == 0) {
+            return true;
+        }
+        return MissionItemProtocol::item_exists(seq);
+    }
+
+#if AP_MAVLINK_MISSION_OPAQUE_ID_ENABLED
+    uint16_t opaque_id_first_item() const override { return 1; }
+    uint32_t last_items_change_time_ms() const override {
+        return mission.last_change_time_ms();
+    }
+    HAL_Semaphore &get_items_semaphore() override { return mission.get_semaphore(); }
+
+#endif  // AP_MAVLINK_MISSION_OPAQUE_ID_ENABLED
+
 private:
     AP_Mission &mission;
 
@@ -45,14 +64,8 @@ private:
     // item to the end of the list of stored items.
     MAV_MISSION_RESULT append_item(const mavlink_mission_item_int_t &) override WARN_IF_UNUSED;
 
-    // get_item() fills in ret_packet based on packet; _link is the
-    // link the request was received on, and msg is the undecoded
-    // request.  Note that msg may not actually decode to a
-    // request_int_t!
-    MAV_MISSION_RESULT get_item(const GCS_MAVLINK &_link,
-                                const mavlink_message_t &msg,
-                                const mavlink_mission_request_int_t &packet,
-                                mavlink_mission_item_int_t &ret_packet) override WARN_IF_UNUSED;
+    // support for GCS getting waypoints etc from us:
+    MAV_MISSION_RESULT get_item(uint16_t seq, mavlink_mission_item_int_t &ret_packet) override WARN_IF_UNUSED;
 
     // item_count() returns the number of stored items
     uint16_t item_count() const override;
@@ -63,6 +76,5 @@ private:
 
     // replace_item() replaces an item in the stored list
     MAV_MISSION_RESULT replace_item(const mavlink_mission_item_int_t &) override WARN_IF_UNUSED;
-
 };
 
