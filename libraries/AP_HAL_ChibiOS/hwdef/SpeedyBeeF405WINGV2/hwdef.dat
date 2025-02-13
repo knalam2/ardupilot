@@ -11,7 +11,7 @@ undef PC6 PC7 PC5 PB15 PA8
 
 # Re-defining the new configuration for SpeedyBeeF405WINGV2
 # board ID for firmware load
-APJ_BOARD_ID 1106
+APJ_BOARD_ID AP_HW_SpeedyBeeF405WINGV2
 
 # USART1 (onboard Telemetry)
 define DEFAULT_SERIAL1_PROTOCOL SerialProtocol_MAVLink2
