@@ -22,6 +22,7 @@
 #include <GCS_MAVLink/GCS.h>
 
 #include "lua_scripts.h"
+#include "AP_Scripting_helpers.h"
 
 // ensure that we have a set of stack sizes, and enforce constraints around it
 // except for the minimum size, these are allowed to be defined by the build system
@@ -351,6 +352,9 @@ void AP_Scripting::thread(void) {
             }
         }
 #endif // AP_NETWORKING_ENABLED
+
+        // clear DroneCAN_Handle instances
+        DroneCAN_Handle::destroy_all();
 
 #if AP_SCRIPTING_SERIALDEVICE_ENABLED
         // clear data in serial buffers that hasn't been transmitted
