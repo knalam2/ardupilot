@@ -119,7 +119,7 @@ void AP_RCProtocol::init()
     backend[AP_RCProtocol::RADIO] = NEW_NOTHROW AP_RCProtocol_Radio(*this);
 #endif
 #if AP_RCPROTOCOL_IOMCU_ENABLED
-    backend[AP_RCProtocol::IOMCU] = new AP_RCProtocol_IOMCU(*this);
+    backend[AP_RCProtocol::IOMCU] = NEW_NOTHROW AP_RCProtocol_IOMCU(*this);
 #endif  // AP_RCPROTOCOL_IOMCU_ENABLED
 #if AP_RCPROTOCOL_EMLID_RCIO_ENABLED
     backend[AP_RCProtocol::EMLID_RCIO] = new AP_RCProtocol_Emlid_RCIO(*this);
