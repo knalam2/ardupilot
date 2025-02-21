@@ -3,6 +3,10 @@
 # Compasses:
 COMPASS LIS3MDL SPI:lis3mdl  false ROTATION_ROLL_180_YAW_90
 
+# Baros:
+BARO MS56XX SPI:ms5611
+
+
 # this board has never compiled since 96180018fbd16b79c30d4d3ba1b7d34fcba6a124 as there's no constructor for Invensense taking separate SPI device names for gyro and accel:
 
 #     #define HAL_INS_PROBE_LIST PROBE_IMU_SPI2(Invensense, "rst_g", "rst_a", ROTATION_ROLL_180_YAW_90, ROTATION_ROLL_180_YAW_90)
