@@ -21,7 +21,7 @@
 
 local MAVLink_command_int = {}
 
-MAVLink_command_int.SCRIPT_VERSION = "4.7.0-002"
+MAVLink_command_int.SCRIPT_VERSION = "4.7.0-003"
 MAVLink_command_int.SCRIPT_NAME = "MAVLink Command Int"
 MAVLink_command_int.SCRIPT_NAME_SHORT = "MAVCMDINT"
 
@@ -123,6 +123,9 @@ function MAVLink_command_int.request_message_interval(channel, target)
         gcs:send_text(MAVLink_command_int.MAV_SEVERITY.ERROR, MAVLink_command_int.SCRIPT_NAME_SHORT .. ": request_message_interval no target")
         return
     end
+    if channel < 0 then -- -1 means "don't request"
+        return
+    end
 
     local message = {
         command = MAVLink_command_int.MAV_CMD_INT.CMD_SET_MESSAGE_INTERVAL,
@@ -146,7 +149,7 @@ function MAVLink_command_int.request_message_interval(channel, target)
             return false
         end
     end
-    gcs:send_text(MAVLink_command_int.MAV_SEVERITY.INFO, MAVLink_command_int.SCRIPT_NAME_SHORT .. " MAVLink sent to: " .. target.sysid .. " at " .. target.interval_ms)
+    gcs:send_text(MAVLink_command_int.MAV_SEVERITY.INFO, MAVLink_command_int.SCRIPT_NAME_SHORT .. " interval sent to: " .. target.sysid .. " at " .. target.interval_ms)
     return true
 end
 

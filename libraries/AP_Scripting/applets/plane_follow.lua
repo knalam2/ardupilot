@@ -25,7 +25,7 @@
    ZPR_TURN_DEG - if the target is more than this many degrees left or right, assume it's turning
 --]]
 
-SCRIPT_VERSION = "4.7.0-050"
+SCRIPT_VERSION = "4.7.0-051"
 SCRIPT_NAME = "Plane Follow"
 SCRIPT_NAME_SHORT = "PFollow"
 
@@ -175,7 +175,7 @@ ZPF_ALT_OVR = bind_add_param("ALT_OVR", 9, 0)
     // @Description: P gain for the speed PID controller distance component
     // @Range: 0 1
 --]]
-ZPF_D_P = bind_add_param("D_P", 11, 0.3)
+ZPF_D_P = bind_add_param("D_P", 11, 0.02)
 
 --[[
     // @Param: ZPF_D_I
@@ -183,7 +183,7 @@ ZPF_D_P = bind_add_param("D_P", 11, 0.3)
     // @Description: I gain for the speed PID  distance component
     // @Range: 0 1
 --]]
-ZPF_D_I = bind_add_param("D_I", 12, 0.3)
+ZPF_D_I = bind_add_param("D_I", 12, 0.02)
 
 --[[
     // @Param: ZPF_D_D
@@ -191,7 +191,7 @@ ZPF_D_I = bind_add_param("D_I", 12, 0.3)
     // @Description: D gain for the speed PID controller distance component
     // @Range: 0 1
 --]]
-ZPF_D_D = bind_add_param("D_D", 13, 0.05)
+ZPF_D_D = bind_add_param("D_D", 13, 0.015)
 
 --[[
     // @Param: ZPF_V_P
@@ -199,7 +199,7 @@ ZPF_D_D = bind_add_param("D_D", 13, 0.05)
     // @Description: P gain for the speed PID controller velocity component
     // @Range: 0 1
 --]]
-ZPF_V_P = bind_add_param("V_P", 14, 0.3)
+ZPF_V_P = bind_add_param("V_P", 14, 0.02)
 
 --[[
     // @Param: ZPF_V_I
@@ -207,7 +207,7 @@ ZPF_V_P = bind_add_param("V_P", 14, 0.3)
     // @Description: I gain for the speed PID controller velocity component
     // @Range: 0 1
 --]]
-ZPF_V_I = bind_add_param("V_I", 15, 0.3)
+ZPF_V_I = bind_add_param("V_I", 15, 0.02)
 
 --[[
     // @Param: ZPF_V_D
@@ -215,7 +215,7 @@ ZPF_V_I = bind_add_param("V_I", 15, 0.3)
     // @Description: D gain for the speed PID controller velocity component
     // @Range: 0 1
 --]]
-ZPF_V_D = bind_add_param("V_D", 16, 0.05)
+ZPF_V_D = bind_add_param("V_D", 16, 0.015)
 
 --[[
     // @Param: ZPF_LkAHD
@@ -247,12 +247,12 @@ ZPF_SIM_TELF_FN = bind_add_param("SIM_TELF_FN", 19, 302)
     // @Description: This is the serial/channel where mavlink messages will go to the target vehicle
     // @Range: 0 9
 --]]
-ZPF_SR_CH = bind_add_param("SR_CH", 20, 0)
+ZPF_SR_CH = bind_add_param("SR_CH", 20, -1)
 
 --[[
     // @Param: ZPF_SR_INT
     // @DisplayName: Plane Follow Stream Rate Interval
-    // @Description: This is the stream rate that the chase plane will request from the lead plane for GLOBAL_POSITION_INT and ATTITUDE telemetry 
+    // @Description: This is the stream rate that the chase plane will request from the lead plane for GLOBAL_POSITION_INT and ATTITUDE telemetry. Set to -1 to dieable.
     // @Range: 25 500
     // @Units: ms
 --]]
@@ -273,7 +273,7 @@ local use_wide_turns = ZPF_WIDE_TURNS:get() or 1
 
 local distance_fudge = ZPF_DIST_FUDGE:get() or 0.92
 
-local target_serial_channel = ZPF_SR_CH:get() or 0
+local target_serial_channel = ZPF_SR_CH:get() or -1
 
 local simulate_telemetry_failed = false
 
@@ -299,15 +299,15 @@ local function constrain(v, vmin, vmax)
 end
 
 local speedpid = require("speedpid")
-local pid_controller_distance = speedpid.speed_controller(ZPF_D_P:get() or 0.3,
-                                                            ZPF_D_I:get() or 0.3,
-                                                            ZPF_D_D:get() or 0.05,
-                                                            5.0, airspeed_min - airspeed_max, airspeed_max - airspeed_min)
+local pid_controller_distance = speedpid.speed_controller(ZPF_D_P:get() or 0.01,
+                                                            ZPF_D_I:get() or 0.01,
+                                                            ZPF_D_D:get() or 0.005,
+                                                            0.5, airspeed_min - airspeed_max, airspeed_max - airspeed_min)
 
-local pid_controller_velocity = speedpid.speed_controller(ZPF_V_P:get() or 0.3,
-                                                            ZPF_V_I:get() or 0.3,
-                                                            ZPF_V_D:get() or 0.05,
-                                                            5.0, airspeed_min, airspeed_max)
+local pid_controller_velocity = speedpid.speed_controller(ZPF_V_P:get() or 0.01,
+                                                            ZPF_V_I:get() or 0.01,
+                                                            ZPF_V_D:get() or 0.005,
+                                                            2.0, airspeed_min, airspeed_max)
 
 
 local mavlink_attitude = require("mavlink_attitude")
@@ -700,7 +700,7 @@ local function update()
 
    -- if the target vehicle is starting to roll we need to pre-empt a turn is coming
    -- this is fairly simplistic and could probably be improved
-   -- got the code from Mission Planner - this is how it calculates the turn radius in c#
+   -- got the code from Mission Planner - this is how MP calculates the turn radius in c#
    --[[
    public float radius
         {
@@ -721,7 +721,9 @@ local function update()
    if target_attitude ~= nil then
       if (now - (target_attitude.timestamp_ms * 0.001) < LOST_TARGET_TIMEOUT) and
          math.abs(target_attitude.roll) > 0.1 or math.abs(target_attitude.rollspeed) > 1 then
-         local turn_radius = vehicle_airspeed * vehicle_airspeed / (9.80665 * math.tan(target_attitude.roll + target_attitude.rollspeed))
+         -- the roll and rollspeed are delayed values from the target plane, try to extrapolate them to at least "now" + 1 second
+         local rollspeed_impact = target_attitude.rollspeed * (target_attitude.delay_ms + 1000)
+         local turn_radius = vehicle_airspeed * vehicle_airspeed / (9.80665 * math.tan(target_attitude.roll + rollspeed_impact))
 
          turning = true
          -- predict the roll in 1s from now and use that based on rollspeed
@@ -809,11 +811,20 @@ local function update()
                                     yaw = foll_ofs_y})
       mechanism = 1  -- position/location - for logging
    end
-   -- dv = interim delta velocity based on the pid controller using projected_distance as the error (we want distance == 0)
-   local dv = pid_controller_distance.update(target_airspeed - vehicle_airspeed, projected_distance)
-   local airspeed_new = pid_controller_velocity.update(vehicle_airspeed, dv)
+   -- dv = interim delta velocity based on the pid controller using projected_distance per loop as the error (we want distance == 0)
+   local dv_error = projected_distance * REFRESH_RATE
+   local airspeed_new = vehicle_airspeed
+   local dv = 0.0
+   if dv_error ~= nil then
+      if projected_distance < 0 then
+         dv_error = dv_error * 1.75  -- attempt to slow down faster if we are overshooting
+      end
+      dv = pid_controller_distance.update(target_airspeed - vehicle_airspeed, dv_error)
+      airspeed_new = pid_controller_velocity.update(vehicle_airspeed, dv)
+      -- gcs:send_text(MAV_SEVERITY.INFO, string.format("Err: %.1f DstP: %.0f Dst: %.0f dv: %.1f AspO: %.1f", dv_error, projected_distance, xy_dist, dv, airspeed_new))
 
-   set_vehicle_speed({speed = constrain(airspeed_new, airspeed_min, airspeed_max)})
+      set_vehicle_speed({speed = constrain(airspeed_new, airspeed_min, airspeed_max)})
+   end
 
    local log_too_close = 0
    local log_too_close_follow_up = 0
@@ -827,12 +838,13 @@ local function update()
    if overshot then
       log_overshot = 1
    end
-   logger:write("ZPF1",'Dst,DstP,DstE,AspT,Asp,AspO,Mech,Cls,ClsF,OSht','ffffffBBBB','mmmnnn----','----------',
+   logger:write("ZPF1",'Dst,DstP,DstE,AspT,Asp,AspD,AspO,Mech,Cls,ClsF,OSht','fffffffBBBB','mmmnnnn----','-----------',
                   xy_dist,
                   projected_distance,
-                  distance_error,
+                  dv_error,
                   target_airspeed,
                   vehicle_airspeed,
+                  dv,
                   airspeed_new,
                   mechanism, log_too_close, log_too_close_follow_up, log_overshot
                )
@@ -864,7 +876,7 @@ local function protected_wrapper()
    return protected_wrapper, 1000 * REFRESH_RATE
 end
 
-local function delayed_start()
+local function delayed_startup()
    gcs:send_text(MAV_SEVERITY.INFO, string.format("%s %s script loaded", SCRIPT_NAME, SCRIPT_VERSION) )
    return protected_wrapper()
 end
@@ -872,9 +884,9 @@ end
 -- start running update loop - waiting 20s for the AP to initialize
 if FWVersion:type() == 3 then
    if arming:is_armed() then
-      return delayed_start, 1000
+      return delayed_startup, 1000
    else
-      return delayed_start, 20000
+      return delayed_startup, 20000
    end
 else
    gcs:send_text(MAV_SEVERITY.ERROR, string.format("%s: must run on Plane", SCRIPT_NAME_SHORT))
