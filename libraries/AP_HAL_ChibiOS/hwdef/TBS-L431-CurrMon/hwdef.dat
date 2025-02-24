@@ -1,0 +1,28 @@
+include ../TBS-L431/hwdef.inc
+
+USE_BOOTLOADER_FROM_BOARD TBS-L431-Periph
+
+define HAL_USE_ADC TRUE
+define STM32_ADC_USE_ADC1 TRUE
+
+PA0 BATT_CURRENT_SENS  ADC1 SCALE(1)
+
+define HAL_BATT_MONITOR_DEFAULT  0
+define HAL_BATT_CURR_PIN 5
+define HAL_BATT_CURR_SCALE 40.0
+
+# disable unnecessary threads
+define HAL_NO_RCOUT_THREAD
+define HAL_NO_TIMER_THREAD
+
+undef HAL_RCIN_THREAD_ENABLED
+define HAL_RCIN_THREAD_ENABLED 0
+
+# ---------------------- I2C bus ------------------------
+I2C_ORDER I2C1
+
+PA9 I2C1_SCL I2C1
+PA10 I2C1_SDA I2C1
+
+define HAL_I2C_CLEAR_ON_TIMEOUT 0
+define HAL_I2C_INTERNAL_MASK 1
