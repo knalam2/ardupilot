@@ -566,3 +566,17 @@ double uint64_to_double_le(const uint64_t& value)
     memcpy(&out, &value, sizeof(out));
     return out;
 }
+
+/*
+  Get the length bits twos-complement value of raw.
+  With thanks to betaflight
+ */
+int32_t get_twos_complement(uint32_t raw, uint8_t length)
+{
+    if (raw & ((int)1 << (length - 1))) {
+        return ((int32_t)raw) - ((int32_t)1 << length);
+    }
+    else {
+        return raw;
+    }
+}
